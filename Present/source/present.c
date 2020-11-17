@@ -15,7 +15,7 @@
 /*
  * s_box_layes change every 16 bit of @block according to table in @p
  */
-inline int64_t s_box_layes(struct present_t* p, int64_t block) {
+inline int64_t s_box_layer(struct present_t* p, int64_t block) {
     int64_t bit_mask = 0xf;
     for(int16_t i = 0; i < 0x10; ++i) {
         int64_t bit4word = 0x0;
@@ -85,6 +85,9 @@ void present_set_key(struct present_t* p, int64_t key_main_part, int16_t key_cha
     p -> key_main_part = key_main_part;
     p -> key_change_part = key_change_part;
 
+    p -> key_main_part_copy = key_main_part;
+    p -> key_change_part_copy = key_change_part;
+
     p -> s_block_layer_table[0x0] = 0xc;
     p -> s_block_layer_table[0x1] = 0x5;
     p -> s_block_layer_table[0x2] = 0x6;
@@ -107,9 +110,18 @@ void present_set_key(struct present_t* p, int64_t key_main_part, int16_t key_cha
 }
 
 int64_t present_encode(struct present_t* p, int64_t block) {
+    for(int i = 0; i < 31; ++i) {
+        block = add_round_key(p, block);
+        s_box_layer(p, block);
+        p_layer(block);
+
+        key_update(p, i + 1);
+    }
+    p -> key_main_part = p -> key_main_part_copy;
+    p -> key_change_part = p -> key_change_part_copy;
     return block;
 }
 
 int64_t present_decode(struct present_t* p, int64_t block) {
-    return block;
+    return present_encode(p, block);
 }

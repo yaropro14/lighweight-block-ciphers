@@ -8,6 +8,10 @@
 struct present_t {
     int64_t key_main_part;
     int16_t key_change_part;
+
+    int64_t key_main_part_copy;
+    int16_t key_change_part_copy;
+
     int8_t s_block_layer_table[16];
 };
 
