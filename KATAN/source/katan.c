@@ -81,25 +81,25 @@ uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
         
         // only for KATAN64
         for(uint16_t j = 0; j < 3; ++j) {
-            uint64_t L1_update = read_bit(L1, p -> x1) ^\
+            uint64_t a_update = read_bit(L1, p -> x1) ^\
                                  read_bit(L1, p -> x2) ^\
                                  (read_bit(L1, p -> x3) & read_bit(L1, p -> x4)) ^\
                                  (read_bit(L1, p -> x5) & p -> IR) ^ ka;
 
-            uint64_t L2_update = read_bit(L2, p -> y1) ^\
+            uint64_t b_update = read_bit(L2, p -> y1) ^\
                                  read_bit(L2, p -> y2) ^\
                                  (read_bit(L2, p -> y3) & read_bit(L2, p -> y4)) ^\
                                  (read_bit(L2, p -> y5) & read_bit(L2, p -> y6)) ^ kb;
 
-            L2 <<= 1;
-            L2 |= L2_update;
-            //L2 <<= p -> L1_len;
-            //L2 >>= p -> L1_len;
-
             L1 <<= 1;
-            L1 |= L1_update;
+            L1 |= b_update;
             //L1 <<= p -> L2_len;
             //L1 >>= p -> L2_len;
+
+            L2 <<= 1;
+            L2 |= a_update;
+            //L2 <<= p -> L1_len;
+            //L2 >>= p -> L1_len;
         }
         LFSR_next(p);
     }
