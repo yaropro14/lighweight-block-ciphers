@@ -7,7 +7,7 @@ int main() {
     katan_test();
 
     struct katan64_t p;
-    katan_set_key(&p, 0xf0f0f0f0f0f0f0f0, 0xf0f0);
+    katan_set_key(&p, 0xffffffffffffffff, 0xffff);
     printf("block is %lx\n", block);
     block = katan_encode(&p, block);
     printf("encode block is %lx\n", block);

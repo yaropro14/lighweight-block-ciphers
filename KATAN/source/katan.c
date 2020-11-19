@@ -7,6 +7,20 @@
  */
 #define read_bit(word, num) (((word) >> (num)) & 1)
 
+void __bit_print(uint64_t b, int i) {
+    if(i == 0) {
+        return;
+    } else {
+        __bit_print(b / 2, i - 1);
+        printf("%lu", b % 2);
+    }
+}
+
+void bit_print(uint64_t b) {
+    __bit_print(b, 64);
+    putchar('\n');
+}
+
 /*---------------------uintERFASE EMPLEMENTATION-------------------------*/
 void katan_set_key(struct katan64_t* p, uint64_t key_main_part, uint16_t key_change_part) {
     p -> key_main_part = key_main_part;
@@ -41,7 +55,7 @@ uint8_t __read_key_bit(struct katan64_t* p, uint32_t i) {
 }
 
 /*
- * ki return bit of 80b key with i from 0 to 253
+ * ki return bit of 80b key with i from 0 to 511
  */
 uint8_t ki(struct katan64_t* p, uint32_t i) {
     if(i < 80) {
@@ -75,7 +89,7 @@ uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
     uint64_t L1 = (block >> p -> L2_len);
     uint64_t L2 = block - (L1 << p -> L2_len); 
     LFSR_next(p);
-    for(uint16_t i = 0; i < 254; ++i) {
+    for(uint16_t i = 0; i < 254; ++i) { 
         uint8_t ka = ki(p, 2*i);
         uint8_t kb = ki(p, 2*i + 1);
         
@@ -90,16 +104,10 @@ uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
                                  read_bit(L2, p -> y2) ^\
                                  (read_bit(L2, p -> y3) & read_bit(L2, p -> y4)) ^\
                                  (read_bit(L2, p -> y5) & read_bit(L2, p -> y6)) ^ kb;
-
             L1 <<= 1;
             L1 |= b_update;
-            //L1 <<= p -> L2_len;
-            //L1 >>= p -> L2_len;
-
             L2 <<= 1;
             L2 |= a_update;
-            //L2 <<= p -> L1_len;
-            //L2 >>= p -> L1_len;
         }
         LFSR_next(p);
     }
