@@ -21,28 +21,6 @@ void bit_print(uint64_t b) {
     putchar('\n');
 }
 
-/*---------------------uintERFASE EMPLEMENTATION-------------------------*/
-void katan_set_key(struct katan64_t* p, uint64_t key_main_part, uint16_t key_change_part) {
-    p -> key_main_part = key_main_part;
-    p -> key_change_part = key_change_part;
-
-    p -> L1_len = 25;
-    p -> L2_len = 39;
-    
-    p -> x1 = 24;
-    p -> x2 = 15;
-    p -> x3 = 20;
-    p -> x4 = 11;
-    p -> x5 = 9;
-
-    p -> y1 = 38;
-    p -> y2 = 25;
-    p -> y3 = 33;
-    p -> y4 = 21;
-    p -> y5 = 14;
-    p -> y6 = 9;
-}
-
 /*
  * helps read key bit
  */
@@ -84,15 +62,38 @@ void LFSR_next(struct katan64_t* p) {
     p -> LFSR = LFSR;
 }
 
+/*---------------------uintERFASE EMPLEMENTATION-------------------------*/
+void katan_set_key(struct katan64_t* p, uint64_t key_main_part, uint16_t key_change_part) {
+    p -> key_main_part = key_main_part;
+    p -> key_change_part = key_change_part;
+
+    p -> L1_len = 25;
+    p -> L2_len = 39;
+    
+    p -> x1 = 24;
+    p -> x2 = 15;
+    p -> x3 = 20;
+    p -> x4 = 11;
+    p -> x5 = 9;
+
+    p -> y1 = 38;
+    p -> y2 = 25;
+    p -> y3 = 33;
+    p -> y4 = 21;
+    p -> y5 = 14;
+    p -> y6 = 9;
+}
+
+
 uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
     LFSR_start(p);
     uint64_t L1 = (block >> p -> L2_len);
     uint64_t L2 = block - (L1 << p -> L2_len); 
-    LFSR_next(p);
+
     for(uint16_t i = 0; i < 254; ++i) { 
         uint8_t ka = ki(p, 2*i);
         uint8_t kb = ki(p, 2*i + 1);
-        
+
         // only for KATAN64
         for(uint16_t j = 0; j < 3; ++j) {
             uint64_t a_update = read_bit(L1, p -> x1) ^\
@@ -106,11 +107,17 @@ uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
                                  (read_bit(L2, p -> y5) & read_bit(L2, p -> y6)) ^ kb;
             L1 <<= 1;
             L1 |= b_update;
+            L1 <<= p -> L2_len;
+            L1 >>= p -> L2_len;
+
             L2 <<= 1;
             L2 |= a_update;
+            L2 <<= p -> L1_len;
+            L2 >>= p -> L1_len;
         }
         LFSR_next(p);
     }
+    
     block = 0;
     for(int i = 0; i < p -> L2_len; ++i) {
         block |= L2 & 1;
@@ -124,7 +131,6 @@ uint64_t katan_encode(struct katan64_t* p, uint64_t block) {
         }
         L1 >>= 1;
     }
-
     return block;
 }
 
